@@ -1,49 +1,60 @@
----
 driver:
   name: docker
 
 platforms:
-  - name: instance-rhel10
-    image: registry.access.redhat.com/ubi10/ubi-init:latest
-    command: "/usr/sbin/init"
-    pre_build_image: true
-    privileged: true
-    port_bindings:
-      - ${PORT_BINDING:-8080}:8080
-    published_ports:
-      - 0.0.0.0:${PORT_BINDING:-8080}:8080/TCP
-
-  - name: instance-rhel9
-    image: registry.access.redhat.com/ubi9/ubi-init:latest
-    command: "/usr/sbin/init"
-    pre_build_image: true
-    privileged: true
-    port_bindings:
-      - ${PORT_BINDING:-8081}:8080
-
   - name: instance-rhel8
+    hostname: instance-rhel8
     image: registry.access.redhat.com/ubi8/ubi-init:latest
     command: "/usr/sbin/init"
     pre_build_image: true
     privileged: true
-    port_bindings:
-      - ${PORT_BINDING:-8082}:8080
+    published_ports:
+      - 0.0.0.0:2208:22
+    environment:
+      container: docker
+
+  - name: instance-rhel9
+    hostname: instance-rhel9
+    image: registry.access.redhat.com/ubi9/ubi-init:latest
+    command: "/usr/sbin/init"
+    pre_build_image: true
+    privileged: true
+    published_ports:
+      - 0.0.0.0:2209:22
+    environment:
+      container: docker
+
+  - name: instance-rhel10
+    hostname: instance-rhel10
+    image: registry.access.redhat.com/ubi10/ubi-init:latest
+    command: "/usr/sbin/init"
+    pre_build_image: true
+    privileged: true
+    published_ports:
+      - 0.0.0.0:2210:22
+    environment:
+      container: docker
 
 provisioner:
   name: ansible
-  config_options:
-    defaults:
-      interpreter_python: auto_silent
-    ssh_connection:
-      pipelining: false
   inventory:
     host_vars:
-      localhost:
-        ansible_python_interpreter: "{{ ansible_playbook_python }}"
-      instance-rhel10:
-        jws_java_version: 21
-      instance-rhel9:
-        jws_java_version: 17
       instance-rhel8:
-        jws_java_version: 11
+        ansible_host: 127.0.0.1
+        ansible_port: 2208
+        ansible_user: root
+        ansible_password: redhat
         ansible_python_interpreter: /usr/bin/python3.9
+        jws_java_version: 11
+      instance-rhel9:
+        ansible_host: 127.0.0.1
+        ansible_port: 2209
+        ansible_user: root
+        ansible_password: redhat
+        jws_java_version: 17
+      instance-rhel10:
+        ansible_host: 127.0.0.1
+        ansible_port: 2210
+        ansible_user: root
+        ansible_password: redhat
+        jws_java_version: 21
